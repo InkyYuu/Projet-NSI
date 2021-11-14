@@ -1,8 +1,11 @@
 # Projet : Jeu de cartes UNO
 
 Made with <3 by Kellian Bredeau and Thomas Gaveau
+
 Date: 15/11/2021
+
 Version: 1.0
+
 Description: Jeu du Uno
 
 ## Dépendance : 
