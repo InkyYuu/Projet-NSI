@@ -11,6 +11,8 @@ import time
 # Définition des classes
 
 # Classe Jeu
+
+
 class Jeu:
     def __init__(self):
         self.joueurs = []
@@ -31,12 +33,15 @@ class Jeu:
 
     # Fonction de démarrage du jeu
     def demarrage(self):
-        self.pile = Pile(random.choice(self.cartes)) # On tire au hasard une carte
+        # On tire au hasard une carte
+        self.pile = Pile(random.choice(self.cartes))
         while self.pile.defausse.couleur == 'Noir':  # On évite la carte noir en début de partie
             self.pile = Pile(random.choice(self.cartes))
-        print(f"Pile : {self.pile.aff_pile()}") # On affiche la pile
+        print(f"Pile : {self.pile.aff_pile()}")  # On affiche la pile
 
-#Classe Carte
+# Classe Carte
+
+
 class Carte (Jeu):
 
     def __init__(self, couleur, valeur):
@@ -68,6 +73,8 @@ class Carte (Jeu):
         return str(self.valeur) + ' ' + str(self.couleur)
 
 # Classe Main du joueur
+
+
 class Main (Carte):
 
     def __init__(self, cartes):
@@ -77,6 +84,8 @@ class Main (Carte):
         return str(Carte.valeur(self.cartes)) + ' ' + str(Carte.couleur(self.cartes))
 
 # Classe Pile (defausse)
+
+
 class Pile (Carte):
 
     def __init__(self, defausse):
@@ -89,6 +98,8 @@ class Pile (Carte):
         return str(Carte.valeur(self.defausse)) + ' ' + str(Carte.couleur(self.defausse))
 
 # Classe Joueur
+
+
 class Joueur (Jeu):
 
     # Fonction de création d'un joueur
@@ -114,17 +125,22 @@ class Joueur (Jeu):
     # Fonction permettant de calculer le bonus d'une carte
     def bonus_carte(self, carte, game):
         carte = self.split(str(carte))
-        print(carte.valeur)
         if carte.valeur == 'Reverse':  # La carte est-elle un reverse ?
-            game.joueurs = game.joueurs.reverse()  # Change le sens
+            reverse = True
+            game.joueurs[abs((idn + 1) % len(game.joueurs))], game.joueurs[abs((idn - 1) %
+                                                                               len(game.joueurs))] = game.joueurs[abs((idn - 1) % len(game.joueurs))], game.joueurs[abs((idn + 1) % len(game.joueurs))]
+
         if carte.valeur == 'Block':  # La carte est-elle un block ?
             game.joueurs[(idn + 1) % len(game.joueurs)].bloque = True
+            print(
+                f'{game.joueurs[(idn + 1) % len(game.joueurs)].nom} ne pourra pas jouer au prochain tour :/')
         if carte.valeur == '+2':
             for j in range(2):
                 game.joueurs[(idn + 1) % len(game.joueurs)
                              ].main.append(random.choice(game.cartes))
+            print(
+                f'{game.joueurs[(idn + 1) % len(game.joueurs)].nom} prend 2 cartes')
 
-    
     def creerJoueur(self):
         nom = input('Entrez votre nom : ')
         self.nom = nom
@@ -134,7 +150,7 @@ class Joueur (Jeu):
         print(f'Tour de : {self.nom}')
         print(f"Dernière carte posée : {jeu.pile.aff_pile()}")
         if self.bloque:
-            print("T'es bloqué, pas de chance")
+            print(f"{self.nom} est bloqué, pas de chance")
             self.bloque = False
             return
 
@@ -142,11 +158,15 @@ class Joueur (Jeu):
             if carte.couleur == 'Noir' or str(self.split(str(carte)).couleur) == 'Noir':
                 couleur_choisie = random.choice(jeu.couleurs_base)
                 jeu.pile = Pile(Carte(couleur_choisie, 0))
+                print(f"La carte jouée est : {carte}")
                 print(f"La nouvelle couleur choisie est {couleur_choisie} ")
-                if carte.valeur == '+4':
+                if str(self.split(str(carte)).valeur) == '+4':
+                    print(
+                        f'{game.joueurs[(idn + 1) % len(game.joueurs)].nom} prend 4 cartes :/')
                     for j in range(4):
                         jeu.joueurs[(idn + 1) % len(jeu.joueurs)
                                     ].main.append(random.choice(game.cartes))
+                self.main.remove(carte)
                 return
 
         for carte in self.main:
@@ -165,7 +185,7 @@ class Joueur (Jeu):
                 print(f'{self.nom} a posé : {carte}')
                 return
         # Si aucune carte n'a été posée, on tire une carte
-        print('Vous ne pouvez pas poser de carte')
+        print(f'{self.nom} ne peut pas poser de carte, +1 carte')
         self.main.append(random.choice(jeu.cartes))
         return
 
@@ -174,13 +194,14 @@ class Joueur (Jeu):
 
     # Tour du joueur
     def tourHumain(self, game):
-        print(f"A votre tour : {self.nom}")
+        print(f"A ton tour : {self.nom}")
         print(f"Dernière carte posée : {game.pile.aff_pile()}")
         print(self.main)
         if self.bloque:
             print("T'es bloqué, pas de chance")
+            self.bloque = False
             return
-        demande = input('Quelle carte voulez-vous poser ?')
+        demande = input('Quelle carte veux-tu poser ?')
         if demande != 'Rien':
             demande = self.split(str(demande))
             for carte in self.main:
@@ -191,18 +212,23 @@ class Joueur (Jeu):
                         game.pile = Pile(carte)
                         self.bonus_carte(carte, game)
                         self.main.remove(carte)
-                        print(f'Vous avez posé : {carte}')
+                        print(f'Tu as posé : {carte}')
                         return
                     if cartef.est_noir():
+                        print(f"La carte jouée est : {carte}")
                         couleur_choisie = input(
                             "Quelle couleur souhaitez-vous ?")
                         game.pile = Pile(Carte(couleur_choisie, ''))
+                        self.bonus_carte(carte, game)
+                        self.main.remove(carte)
                         if carte.valeur == '+4':  # La carte est-elle un +4 ?
+                            print(
+                                f'{game.joueurs[(idn + 1) % len(game.joueurs)].nom} prend 4 cartes :/')
                             for j in range(4):
                                 joueur[(idn + 1) % len(game.joueurs)
                                        ].main.append(random.choice(game.cartes))
                         return
-            print("T'as voulu tricher je t'ai vu ! +1 carte")
+            print("T'as voulu tricher, je t'ai vu ! +1 carte")
             self.main.append(random.choice(game.cartes))
         else:
             print("Tu as pioché 1 carte")
@@ -222,18 +248,26 @@ game.joueurs.append(player)
 
 running = True
 while running:
+    # if reverse :
+    #     game.joueurs.reverse()
+    #     reverse = False
     for idn, joueur in enumerate(game.joueurs):
         print("\n")
         if joueur.nom != player.nom:
             joueur.tourBot(game)
-            time.sleep(1)
+            time.sleep(2)
             if len(joueur.main) == 0:
-                print(f'{joueur.nom} a gagné !')
+                print(f'{joueur.nom} a gagné ! Félicitation !')
                 running = False
                 break
+            # if reverse:
+            #     break
         else:
+            reverse = False
             joueur.tourHumain(game)
             if len(joueur.main) == 0:
-                print(f'{joueur.nom} a gagné !')
+                print(f'{joueur.nom} a gagné ! Félicitation')
                 running = False
                 break
+            # if reverse:
+            #     break
